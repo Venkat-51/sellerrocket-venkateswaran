@@ -2,8 +2,7 @@
   "name": "landing-page-backend",
   "version": "1.0.0",
   "description": "Backend API for landing page lead generation",
-  "type": "module",
-  "main": "server.ts",
+  "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch server.ts",
     "build": "tsc",

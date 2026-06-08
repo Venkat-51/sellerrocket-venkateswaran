@@ -17,6 +17,24 @@ app.use(
   })
 );
 
+// Root endpoint
+app.get('/', (req, res) => {
+  res.status(200).json({
+    message: 'Leads API is running',
+    version: '1.0.0',
+    endpoints: {
+      health: 'GET /health',
+      leads: {
+        list: 'GET /api/leads',
+        create: 'POST /api/leads',
+        get: 'GET /api/leads/:id',
+        updateStatus: 'PATCH /api/leads/:id/status',
+        delete: 'DELETE /api/leads/:id',
+      },
+    },
+  });
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({
