@@ -4,7 +4,6 @@
   "description": "Backend API for landing page lead generation",
   "main": "dist/server.js",
   "scripts": {
-    "postinstall": "tsc",
     "dev": "tsx watch server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
@@ -21,8 +20,8 @@
     "@types/express": "^4.17.21",
     "@types/node": "^20.10.6",
     "@types/sqlite3": "^3.1.11",
-    "typescript": "^5.3.3",
+    "tsconfig-paths": "^4.2.0",
     "tsx": "^4.7.0",
-    "tsconfig-paths": "^4.2.0"
+    "typescript": "^5.8.3"
   }
 }
