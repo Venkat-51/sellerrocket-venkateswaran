@@ -4,6 +4,7 @@
   "description": "Backend API for landing page lead generation",
   "main": "dist/server.js",
   "scripts": {
+    "postinstall": "tsc",
     "dev": "tsx watch server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
