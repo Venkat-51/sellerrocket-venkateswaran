@@ -97,6 +97,32 @@ export async function initializeDatabase() {
     await dbRun(
       'CREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status)'
     );
+
+    // Create admins table for authentication
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS admins (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL UNIQUE,
+        email TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL,
+        is_active INTEGER DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create default admin if it doesn't exist
+    const adminExists = await dbGet('SELECT id FROM admins LIMIT 1');
+    if (!adminExists) {
+      const bcrypt = require('bcryptjs');
+      const hashedPassword = await bcrypt.hash('admin123', 10);
+      await dbRun(
+        `INSERT INTO admins (username, email, password_hash)
+         VALUES (?, ?, ?)`,
+        ['admin', 'admin@example.com', hashedPassword]
+      );
+      console.log('✓ Default admin created (username: admin, password: admin123)');
+    }
   } catch (error) {
     console.error('Error initializing database:', error);
     throw error;

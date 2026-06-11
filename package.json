@@ -1,6 +1,9 @@
 {
   "name": "landingpagedesign",
   "private": true,
+  "engines": {
+    "node": ">=20 <22"
+  },
   "scripts": {
     "frontend": "cd frontend && npm run dev",
     "backend": "cd backend && npm run dev",

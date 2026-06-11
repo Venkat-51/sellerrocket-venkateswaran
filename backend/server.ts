@@ -3,10 +3,13 @@ import cors from 'cors';
 import 'dotenv/config';
 import db, { initializeDatabase } from './database';
 import leadsRoutes from './routes/leads';
+import authRoutes from './routes/auth';
+import adminRoutes from './routes/admin';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+let server: any;
 
 // Middleware
 app.use(express.json());
@@ -45,6 +48,8 @@ app.get('/health', (req, res) => {
 
 // API Routes
 app.use('/api/leads', leadsRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -67,9 +72,18 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
     await initializeDatabase();
     console.log('✓ Database initialized');
 
-    app.listen(PORT, () => {
+    server = app.listen(PORT, () => {
       console.log(`✓ Server running on http://localhost:${PORT}`);
       console.log(`✓ CORS enabled for ${FRONTEND_URL}`);
+    });
+
+    server.on('error', (err: any) => {
+      if (err && err.code === 'EADDRINUSE') {
+        console.error(`Port ${PORT} is already in use. Stop the other process or set a different PORT.`);
+        process.exit(1);
+      } else {
+        console.error('Unhandled server error:', err);
+      }
     });
   } catch (error) {
     console.error('Failed to start server:', error);
@@ -80,6 +94,23 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 // Graceful shutdown
 process.on('SIGINT', () => {
   console.log('\n✓ Shutting down gracefully...');
-  db.close();
-  process.exit(0);
+  if (server && typeof server.close === 'function') {
+    server.close(() => {
+      db.close();
+      process.exit(0);
+    });
+  } else {
+    db.close();
+    process.exit(0);
+  }
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled rejection:', reason);
+  process.exit(1);
 });

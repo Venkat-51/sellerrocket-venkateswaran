@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
+import { Link } from 'react-router';
 import { Button } from './ui/button';
 
 export function Header() {
@@ -47,6 +48,11 @@ export function Header() {
             >
               Contact
             </button>
+            <Link to="/admin/login">
+              <Button variant="outline" size="sm">
+                Admin
+              </Button>
+            </Link>
           </nav>
 
           {/* Mobile Menu Button */}
@@ -85,6 +91,11 @@ export function Header() {
             >
               Contact
             </button>
+            <Link to="/admin/login" className="block">
+              <Button variant="outline" size="sm" className="w-full">
+                Admin
+              </Button>
+            </Link>
           </nav>
         )}
       </div>
