@@ -4,7 +4,7 @@ SellerRocket is a modern seller management platform designed to help online sell
 
 ## 🚀 Live Demo
 
-sellerrocket-venkateswaran-77sc-m1g6ipzz9.vercel.app
+[sellerrocket-venkateswaran-77sc-m1g6ipzz9.vercel.app](https://sellerrocket-venkateswaran-77sc-m1g6ipzz9.vercel.app/)
 
 ## 📌 Features
 
