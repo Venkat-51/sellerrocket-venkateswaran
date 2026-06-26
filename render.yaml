@@ -1,0 +1,33 @@
+services:
+  # Backend API Service
+  - type: web
+    name: sellerrocket-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_PATH
+        value: /data/leads.db
+    disk:
+      name: sqlite-data
+      mountPath: /data
+      sizeGB: 1
+
+  # Frontend Static Site
+  - type: web
+    name: sellerrocket-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        # This tells the frontend where the backend is hosted. 
+        # Update this value in the Render dashboard after the backend is deployed.
+        fromService:
+          type: web
+          name: sellerrocket-backend
+          envVarKey: RENDER_EXTERNAL_URL
