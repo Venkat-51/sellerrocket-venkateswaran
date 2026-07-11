@@ -5,9 +5,25 @@ import fs from 'fs';
 const dbPath = process.env.DB_PATH || './data/leads.db';
 const dbDir = path.dirname(dbPath);
 
-// Ensure data directory exists
+// Ensure data directory exists.
+// On Render the disk is pre-mounted at /data (root-owned), so we skip
+// mkdirSync if the directory already exists to avoid EACCES errors.
 if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir, { recursive: true });
+  try {
+    fs.mkdirSync(dbDir, { recursive: true });
+  } catch (err: any) {
+    // If the directory was created between the existsSync check and mkdirSync
+    // (race condition) or is already mounted (Render persistent disk), ignore.
+    if (err.code !== 'EEXIST' && err.code !== 'EACCES') {
+      throw err;
+    }
+    if (err.code === 'EACCES') {
+      console.warn(
+        `Warning: cannot create directory ${dbDir} (EACCES). ` +
+        `Assuming it is a pre-mounted volume and continuing.`
+      );
+    }
+  }
 }
 
 // Create database connection
