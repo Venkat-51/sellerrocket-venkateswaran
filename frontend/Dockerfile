@@ -17,7 +17,7 @@ COPY . .
 # Build static assets → dist/
 # VITE_API_URL is passed at build time via --build-arg
 ARG VITE_API_URL=http://localhost:3001
-ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_API_URL=https://sellerrocket-venkateswaran.onrender.com
 
 RUN npm run build
 
