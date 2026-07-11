@@ -11,6 +11,10 @@ services:
         value: production
       - key: DB_PATH
         value: /data/leads.db
+      - key: JWT_SECRET
+        generateValue: true   # Render auto-generates a secure random value
+      - key: FRONTEND_URL
+        value: https://sellerrocket-frontend.onrender.com   # Update after frontend deploys
     disk:
       name: sqlite-data
       mountPath: /data

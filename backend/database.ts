@@ -2,32 +2,47 @@ import sqlite3 from 'sqlite3';
 import path from 'path';
 import fs from 'fs';
 
-const dbPath = process.env.DB_PATH || './data/leads.db';
-const dbDir = path.dirname(dbPath);
+// ─── Resolve a writable database path ───────────────────────────────────────
+// Priority:
+//   1. DB_PATH env var (e.g. /data/leads.db on Render with persistent disk)
+//   2. ./data/leads.db  (local development)
+//   3. /tmp/leads.db    (Render free tier / any env where ./data is not writable)
+//
+// The fallback to /tmp is ephemeral (data lost on restart) but keeps the
+// service running until a persistent disk or proper DB_PATH is configured.
 
-// Ensure data directory exists.
-// On Render the disk is pre-mounted at /data (root-owned), so we skip
-// mkdirSync if the directory already exists to avoid EACCES errors.
-if (!fs.existsSync(dbDir)) {
-  try {
-    fs.mkdirSync(dbDir, { recursive: true });
-  } catch (err: any) {
-    // If the directory was created between the existsSync check and mkdirSync
-    // (race condition) or is already mounted (Render persistent disk), ignore.
-    if (err.code !== 'EEXIST' && err.code !== 'EACCES') {
-      throw err;
-    }
-    if (err.code === 'EACCES') {
-      console.warn(
-        `Warning: cannot create directory ${dbDir} (EACCES). ` +
-        `Assuming it is a pre-mounted volume and continuing.`
-      );
+function resolveDbPath(): string {
+  const candidates = [
+    process.env.DB_PATH,
+    path.resolve('./data/leads.db'),
+    '/tmp/leads.db',
+  ].filter(Boolean) as string[];
+
+  for (const candidate of candidates) {
+    const dir = path.dirname(candidate);
+    try {
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      // Verify the directory is actually writable
+      const testFile = path.join(dir, '.write_test');
+      fs.writeFileSync(testFile, '');
+      fs.unlinkSync(testFile);
+      console.log(`✓ Database path resolved: ${candidate}`);
+      return candidate;
+    } catch {
+      console.warn(`  Skipping ${candidate} (not writable), trying next...`);
     }
   }
+
+  // Should never reach here since /tmp is always writable
+  throw new Error('No writable path found for SQLite database');
 }
 
+const resolvedDbPath = resolveDbPath();
+
 // Create database connection
-const db = new sqlite3.Database(dbPath, (err) => {
+const db = new sqlite3.Database(resolvedDbPath, (err) => {
   if (err) {
     console.error('Error opening database:', err);
     process.exit(1);
