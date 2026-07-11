@@ -45,12 +45,25 @@ var auth_1 = require("./routes/auth");
 var admin_1 = require("./routes/admin");
 var app = (0, express_1.default)();
 var PORT = process.env.PORT || 3001;
-var FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+// FRONTEND_URL can be a comma-separated list of allowed origins.
+// e.g. "https://sellerrocket-venkateswaran.vercel.app,http://localhost:5173"
+var allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
+    .split(',')
+    .map(function (o) { return o.trim(); })
+    .filter(Boolean);
+console.log('✓ Allowed CORS origins:', allowedOrigins);
 var server;
 // Middleware
 app.use(express_1.default.json());
 app.use((0, cors_1.default)({
-    origin: FRONTEND_URL,
+    origin: function (origin, callback) {
+        // Allow requests with no origin (curl, Postman, server-to-server)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        callback(new Error("CORS: origin " + origin + " not allowed"));
+    },
     credentials: true,
 }));
 // Root endpoint

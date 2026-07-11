@@ -14,24 +14,10 @@ services:
       - key: JWT_SECRET
         generateValue: true   # Render auto-generates a secure random value
       - key: FRONTEND_URL
-        value: https://sellerrocket-venkateswaran.vercel.app
+        # Comma-separated list of allowed CORS origins.
+        # Add any additional allowed origins separated by commas (no spaces).
+        value: https://sellerrocket-venkateswaran.vercel.app,https://www.sellerrocket-venkateswaran.vercel.app
     disk:
       name: sqlite-data
       mountPath: /data
       sizeGB: 1
-
-  # Frontend Static Site
-  - type: web
-    name: sellerrocket-frontend
-    env: static
-    rootDir: frontend
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist
-    envVars:
-      - key: VITE_API_URL
-        # This tells the frontend where the backend is hosted. 
-        # Update this value in the Render dashboard after the backend is deployed.
-        fromService:
-          type: web
-          name: sellerrocket-backend
-          envVarKey: RENDER_EXTERNAL_URL
