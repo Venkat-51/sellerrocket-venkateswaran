@@ -1,0 +1,65 @@
+version: '3.9'
+
+services:
+  # ──────────────────────────────────────────
+  # Backend — Node.js / Express / SQLite API
+  # ──────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sellerrocket-backend
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DB_PATH: /data/leads.db
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set in .env}
+    volumes:
+      # Persist SQLite database outside the container
+      - sqlite_data:/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      - sellerrocket
+
+  # ──────────────────────────────────────────
+  # Frontend — React / Vite → Nginx
+  # ──────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Tells Vite where the backend API lives at build time
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3001}
+    container_name: sellerrocket-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - sellerrocket
+
+# ──────────────────────────────────────────
+# Volumes
+# ──────────────────────────────────────────
+volumes:
+  sqlite_data:
+    driver: local
+
+# ──────────────────────────────────────────
+# Networks
+# ──────────────────────────────────────────
+networks:
+  sellerrocket:
+    driver: bridge
