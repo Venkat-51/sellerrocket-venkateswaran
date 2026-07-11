@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3001;
 // e.g. "https://sellerrocket-venkateswaran.vercel.app,http://localhost:5173"
 const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
   .split(',')
-  .map((o) => o.trim())
+  .map((o) => o.trim().replace(/\/$/, ''))  // trim spaces AND trailing slashes
   .filter(Boolean);
 
 console.log('✓ Allowed CORS origins:', allowedOrigins);
