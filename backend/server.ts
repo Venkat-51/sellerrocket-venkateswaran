@@ -8,14 +8,30 @@ import adminRoutes from './routes/admin';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+// FRONTEND_URL can be a comma-separated list of allowed origins.
+// e.g. "https://sellerrocket-venkateswaran.vercel.app,http://localhost:5173"
+const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+console.log('✓ Allowed CORS origins:', allowedOrigins);
+
 let server: any;
 
 // Middleware
 app.use(express.json());
 app.use(
   cors({
-    origin: FRONTEND_URL,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (curl, Postman, server-to-server)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      callback(new Error(`CORS: origin ${origin} not allowed`));
+    },
     credentials: true,
   })
 );
@@ -74,7 +90,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 
     server = app.listen(PORT, () => {
       console.log(`✓ Server running on http://localhost:${PORT}`);
-      console.log(`✓ CORS enabled for ${FRONTEND_URL}`);
+      console.log(`✓ CORS enabled for: ${allowedOrigins.join(', ')}`);
     });
 
     server.on('error', (err: any) => {
