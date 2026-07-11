@@ -85,8 +85,5 @@
     "react-dom": {
       "optional": true
     }
-  },
-  "overrides": {
-    "vite": "6.3.5"
   }
 }
